@@ -66,12 +66,13 @@ CBSfun=function(TH, t0, kCO2, ha, smrfun){
 }
 
 # For the intact plantation
-smr1=splinefun(TEC$t, TEC$releaseflux1) # Problem with rTr1. These values are not realistic, particularly the first value of the series. 
-CBS_Tr_fun=CBSfun(TH=TEC$t,t0=t0,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr1)
+smr1=splinefun(TEC$t, TEC$TEC1) # Problem with rTr1. These values are not realistic, particularly the first value of the series. 
+CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr1)
 CBS_Tr1<-sapply(TEC$t, FUN=CBS_Tr_fun)
 # For the harvested plantation (emissions from fuels are subtracted in the dataframe (0.0297 C Mg ha-1 y-1))
-smr2=splinefun(TEC$t, TEC$releaseflux2)  
-CBS_Tr_fun=CBSfun(TH=TEC$t,t0=t0,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
+TEC[1,4]=TEC[1,4]-0.0297
+smr2=splinefun(TEC$t, TEC$TEC2)  
+CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
 CBS_Tr2<-sapply(TEC$t, FUN=CBS_Tr_fun)
 
 # plot
