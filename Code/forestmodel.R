@@ -51,3 +51,15 @@ TCS_values2 <- TCS_model2(time_series)
 matplot(TCS_values2$t,TCS_values2[,2:5], type="l", lty=1,lwd=3, col=c(2:4,1),ylim=c(0,max(TCS_values2)), 
         ylab="Carbon stocks (Ton C/ha)", xlab="Time (years)")
 legend("topleft",c("TAGB", "TBB","TDM","TCS"),lty=1,col=c(2:4,1), lwd=3, bty="n")
+
+##################################################################
+# Pakukui growth model from Lincoln 2023
+
+# time series of kukui biomass (ton/ha)
+TB=c( 0.0003, 0.0100, 0.0317, 0.0613, 0.0959, 0.1334, 0.1729, 0.2135, 0.2547, 0.2962, 0.3378,
+0.3793, 0.4206, 0.4616, 0.5022, 0.5425, 0.5824, 0.6218, 0.6609, 0.6994, 0.7376, 0.7752,
+0.8125 ,0.8493, 0.8857, 0.9217, 0.9573 ,0.9924 ,1.0272)
+
+# Plot the results
+matplot(c(2:30), TB, type="l", lty=1,lwd=3, 
+        ylab="Total biomass (ton/ha)", xlab="Time (years)")
