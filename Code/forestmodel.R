@@ -53,13 +53,30 @@ matplot(TCS_values2$t,TCS_values2[,2:5], type="l", lty=1,lwd=3, col=c(2:4,1),yli
 legend("topleft",c("TAGB", "TBB","TDM","TCS"),lty=1,col=c(2:4,1), lwd=3, bty="n")
 
 ##################################################################
-# Pakukui growth model from Lincoln 2023
+# Pakukui growth model 
+kukui_model <- function(t, d) {
+  DBH <- -9.021135 + 16.757157 * log(t) # from Lincoln 2023
+  HEIGHT <- -3.635323 + 8.5568025 * log(t) # from Lincoln 2023
+  AGB <- 0.0673 * (d*DBH^2*HEIGHT)^0.976  # from Chave et al. 2014
+  return(data.frame(
+    t = t,
+    DBH = DBH, 
+    HEIGHT = HEIGHT,
+    AGB = AGB
+  ))
+}
 
-# time series of kukui biomass (ton/ha)
-TB=c( 0.0003, 0.0100, 0.0317, 0.0613, 0.0959, 0.1334, 0.1729, 0.2135, 0.2547, 0.2962, 0.3378,
-0.3793, 0.4206, 0.4616, 0.5022, 0.5425, 0.5824, 0.6218, 0.6609, 0.6994, 0.7376, 0.7752,
-0.8125 ,0.8493, 0.8857, 0.9217, 0.9573 ,0.9924 ,1.0272)
+wooddensities=c(230, 310, 330, 440, 490)/1000 # wood density from Krisnawati et al. 2011
+
+kukui_values = lapply(wooddensities, function (density) kukui_model(time_series, density)) 
 
 # Plot the results
-matplot(c(2:30), TB, type="l", lty=1,lwd=3, 
-        ylab="Total biomass (ton/ha)", xlab="Time (years)")
+matplot(time_series,kukui_values[[5]]$AGB, type="l", lty=1,lwd=3, 
+        ylab="Aboveground biomass (kg/ha)", xlab="Time (years)")
+lines(time_series,kukui_values[[1]]$AGB, type="l", lty=1, col = 2, lwd=3)
+lines(time_series,kukui_values[[2]]$AGB, type="l", lty=1, col = 3, lwd=3)
+lines(time_series,kukui_values[[3]]$AGB, type="l", lty=1, col = 4, lwd=3)
+lines(time_series,kukui_values[[4]]$AGB, type="l", lty=1, col = 5, lwd=3)
+legend("topleft",c("230 kg/m3", "310 kg/m3", "330 kg/m3", "440 kg/m3", "490 kg/m3"),lty=1,col=c(2:5,1), lwd=3, bty="n")
+
+# NEED BELOWGROUND BIOMASS AND KUKUI CARBON CONTENT
