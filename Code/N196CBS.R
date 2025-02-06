@@ -1,7 +1,7 @@
-# Let's get the entire ecosystem C dynamics from the soil and forest models to compute CBS
+# Let's get the entire ecosystem C dynamics from the soil and forest models to compute CS and CBS
 
 TEC=as.data.frame(cbind(t=(2025:2100),
-  SOC1=Ct[25:100,1], 
+  BAU=forestvalues$TCS[60:136], 
   TEC2=Ctb[25:100,1], # total ecosystem C after tree harvesting is only soil C with biochar ammendments
   forest=TCS_values2[60:135, 5]
   ))
@@ -66,12 +66,12 @@ CBSfun=function(TH, t0, kCO2, ha, smrfun){
 }
 
 # For the intact plantation
-smr1=splinefun(TEC$t, TEC$TEC1) # Problem with rTr1. These values are not realistic, particularly the first value of the series. 
+smr1=splinefun(TEC$t, c(0,diff(TEC$TEC1)))  
 CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr1)
 CBS_Tr1<-sapply(TEC$t, FUN=CBS_Tr_fun)
 # For the harvested plantation (emissions from fuels are subtracted in the dataframe (0.0297 C Mg ha-1 y-1))
 TEC[1,4]=TEC[1,4]-0.0297
-smr2=splinefun(TEC$t, TEC$TEC2)  
+smr2=splinefun(TEC$t, c(0,diff(TEC$TEC2)))  
 CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
 CBS_Tr2<-sapply(TEC$t, FUN=CBS_Tr_fun)
 
@@ -81,7 +81,7 @@ plot(TEC$X,CBS_Tr1,type="l",col = "green", lwd=3,
      xlab="Time horizon (yr)")
 lines(TEC$X,CBS_Tr2,col='red',lwd=3)
 abline(0, 0, lty='dashed')
-legend("bottomleft",c("After tree harvesting", "Intact plantation"),lty=1,col=c('red','green'), lwd=3, bty="n")
+legend("topleft",c("After tree harvesting", "Intact plantation"),lty=1,col=c('red','green'), lwd=3, bty="n")
 
 
 

@@ -27,9 +27,9 @@ inputs=4.4+18.8+0.4
 # Multiplied by the proportion that enters each pool (from Crow et al. 2015) we get inputs per pool
 inputFluxes=c(inputs*0.9184, inputs*0.0045, inputs*0.0755, 0, 0) 
 # The model
-model=Model(t, A, ivList, inputFluxes)
+soilmodel=Model(t, A, ivList, inputFluxes)
 # Get stocks dynamics
-Ct=cbind(rowSums(getC(model)),getC(model))
+Ct=cbind(rowSums(getC(soilmodel)),getC(soilmodel))
 matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6,ylim=c(0,max(Ct)), 
         ylab="Carbon stocks (Ton C/ha)", xlab="Time (years)")
 legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n")
@@ -47,14 +47,14 @@ yield=mean(c(0.20, 0.065, 0.13, 0.21))
 # biochar fixed carbon % (Sahoo et al. 2021)
 biocharC=mean(c(0.76, 0.89, 0.58, 0.83))
 # Now imagine all trees are harvested at once and turned into biochar
-# We use Eucalyptus grandis AGB of 111.9 Mg ha-1 (Reeves 2012)
-# THIS CAN BE FINETUNED USING THE AMOUNT OF BIOMASS AVAILABE IN 2025 FROM THE NEW MODEL!!!
-biochartotal=111.9*yield*biocharC
-# this amount of biochar is below the maximum application threshold (20 Mg ha-1, Wang et al. 2016),
-# so it could technically be applied at once to the soil
-
+# We use Eucalyptus grandis aboveground carbon from the forest model at year 60
+AGC60=forestvalues$TAGB[60]
+biochartotal=AGC60*yield*biocharC
+# this amount of biochar is above the maximum application threshold (20 Mg ha-1, Wang et al. 2016),
+# we can then apply 20 Mg ha-1 and send the rest to OKFarms for composting (coming soon)
 # new soil model with a new pool that represents a single application of biochar (decay rate from Wang et al. 2016)
-# this asumes that changing the vegetation and applying biochar does not change the behavior of the soil. CAN BE IMPROVED!
+# this asumes that changing the vegetation and applying biochar does not change the behavior of the soil. 
+# CAN BE IMPROVED!
 Ab=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0, 0,
            0, -0.0033, 0, 0, 0.0033*0.8433, 0,
            0, 0, -0.008, 0, 0.008*0.0277, 0,
@@ -62,13 +62,13 @@ Ab=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0, 0,
            0, 0, 0, 0, -0.001, 0,
            0, 0, 0, 0, 0, -0.004), nrow=6)
 # since this simulation starts 60 years after the previous one, we use those stocks at year 60 as initial conditions for this, plus biochar
-ivListb=c(getC(model)[60,],biochartotal)
+ivListb=c(getC(soilmodel)[60,],20)
 # FOR NOW KUKUI INPUTS ARE EQUAL TO EUCALYPTUS', BUT CAN BE IMPROVED
 inputFluxesb=c(inputFluxes,0)
 
-modelb=Model(tb, Ab, ivListb, inputFluxesb)
+soilmodelb=Model(tb, Ab, ivListb, inputFluxesb)
 
-Ctb=cbind(rowSums(getC(modelb)),getC(modelb))
+Ctb=cbind(rowSums(getC(soilmodelb)),getC(soilmodelb))
 matplot(tb,Ctb, type="l", lty=1,lwd=3, col=1:7,ylim=c(0,max(Ctb)), 
         ylab="Carbon stocks (Ton C/ha)", xlab="Time (years)")
 legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5", "Biochar"),lty=1,col=1:7, lwd=3, bty="n")
