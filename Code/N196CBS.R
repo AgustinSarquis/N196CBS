@@ -1,48 +1,37 @@
 # Let's get the entire ecosystem C dynamics from the soil and forest models to compute CS and CBS
-
-TEC=as.data.frame(cbind(t=(2025:2100),
-  BAU=forestvalues$TCS[60:136], 
-  TEC2=Ctb[25:100,1], # total ecosystem C after tree harvesting is only soil C with biochar ammendments
-  forest=TCS_values2[60:135, 5]
+TEC=as.data.frame(cbind(t=2025:2100,
+  BAU=forestvalues$TCS[61:136]+Ct[61:136,1], 
+  Utopy= c(0,na.omit(kukuivalues[[6]]$TCS))+Ctb[,1] 
   ))
-TEC=cbind(TEC, TEC1=rowSums(TEC[,c(2,4)])) #total ecosystem C with an intact forest are the soil and forest models together
 #write.csv(TEC, 'C:/Users/asarq/Documents/TEC.csv')
-
-TEC<-read.csv("~/tmp/TEC.csv")
+#TEC<-read.csv("~/tmp/TEC.csv")
 
 # Plot the results
-matplot(TEC$t,TEC[,c(4,6)], type="l", lty=1,lwd=3, col=c(2,3),ylim=c(0,1000), 
+matplot(TEC$t,TEC[,c(2,3)], type="l", lty=1,lwd=3, col=c(4,7), 
         ylab="Carbon stocks (Mg C/ha)", xlab="Year")
-legend("topleft",c("After tree harvesting", "Intact plantation"),lty=1,col=c(2,3), lwd=3, bty="n")
-polygon(c(TEC$t, rev(TEC$t)), c(TEC[,6], rep(0, length(TEC[,5]))),
-        density = 20, angle = 45, border = NA, col = "green")
-polygon(c(TEC$t, rev(TEC$t)), c(TEC[,4], rep(0, length(TEC[,3]))),
-        density = 20, angle = 135, border = NA, col = "red")
+legend("topleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
+polygon(c(TEC$t, rev(TEC$t)), c(TEC[,2], rep(0, length(TEC[,2]))),
+        density = 20, angle = 45, border = NA, col = 4)
+polygon(c(TEC$t, rev(TEC$t)), c(TEC[,3], rep(0, length(TEC[,3]))),
+        density = 20, angle = 135, border = NA, col = 7)
 
 # Compute Carbon Sequestration (CS) as the area under the curves at the end of the simulation (year 2100)
-# For the intact plantation
-t0<-head(TEC$t, 1)
-tf<-tail(TEC$t, 1)
-CS1 <- integrate(splinefun(TEC$t, TEC$TEC1), lower=t0, upper=tf)$value # 69309.1 Mg C ha-1 * y 
-CS1 # correct value
-square1<-((tf-t0)* max(TEC$TEC1)) # test accuracy approximating to the area of a rectangle
-CS1-square1 # Loss of mass*time in comparison to keeping the system completely intact since t0
-
-# For the plantation after being entirely harvested
-CS2 <- integrate(splinefun(TEC$t, TEC$TEC2), lower=t0, upper=tf)$value # 39155.2 Mg C ha-1 * y 
-square2<-((tf-t0) * max(TEC$TEC2)) # test accuracy approximating to the area of a rectangle
-CS2-square2
-
+# For the business as usual scenario
+t0=2025
+tf=2100
+CS1 <- integrate(splinefun(TEC$t, TEC$BAU), lower=t0, upper=tf)$value # 210992 Mg C ha-1 * y 
+# For the utopian scenario
+CS2 <- integrate(splinefun(TEC$t, TEC$Utopy), lower=t0, upper=tf)$value # 182208 Mg C ha-1 * y 
 
 # function to get CS for specific time horizons
 CS=function(x,y, t){integrate(splinefun(x, y), lower=t0, upper=t)$value} 
 # CS for year 1 to 76 (years 2025 to 2100)
-CSt1=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$TEC1)) # intact plantation
-CSt2=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$TEC2)) # harvested plantation
+CSt1=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$BAU)) 
+CSt2=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$Utopy)) 
 CSdf=as.data.frame(cbind(year=TEC$t, CSt1, CSt2))
-matplot(CSdf$year,CSdf[,c(2,3)], type="l", lty=1,lwd=3, col=c(3,2), 
+matplot(CSdf$year,CSdf[,c(2,3)], type="l", lty=1,lwd=3, col=c(4,7), 
         ylab="Carbon Sequestration (Mg C/ha y)", xlab="Year")
-legend("topleft",c("Intact plantation", "After tree harvesting"),lty=1,col=c(3,2), lwd=3, bty="n")
+legend("topleft",c("Eucalyptus plantation", "Pakukui Agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
 
 # Now calculate CBS (Climate Benefit of Sequestration)
 # Radiative efficiency of one MgC in W m-2 (from Joos et al. 2013)
@@ -65,23 +54,28 @@ CBSfun=function(TH, t0, kCO2, ha, smrfun){
   function(TH){-kCO2*(integrate(cv,lower=t0,upper=TH)$value)}
 }
 
-# For the intact plantation
-smr1=splinefun(TEC$t, c(0,diff(TEC$TEC1)))  
-CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr1)
+# For the business as usual scenario
+smr1=splinefun(TEC$t, c(0,diff(TEC$BAU)))  
+CBS_Tr_fun=CBSfun(TH=TEC$t,t0,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr1)
 CBS_Tr1<-sapply(TEC$t, FUN=CBS_Tr_fun)
-# For the harvested plantation (emissions from fuels are subtracted in the dataframe (0.0297 C Mg ha-1 y-1))
-TEC[1,4]=TEC[1,4]-0.0297
-smr2=splinefun(TEC$t, c(0,diff(TEC$TEC2)))  
-CBS_Tr_fun=CBSfun(TH=TEC$t,t0=2025,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
+# For the utopian scenario 
+# t=0 represents emissions from clearing eucalyptus and biochar production
+# this includes emissions from fuel calculated by Darshi 
+# COULD BE IMPROVED: it doesn't include CO2 equivalents
+fuelC=-0.0297 # C Mg ha-1 (one time emission)
+# and also includes the C lost during biochar production calculated from biochar efficiency (eucClost)
+eucClost=-(1-yield)*AGC60
+smr2=splinefun(TEC$t, c(fuelC+eucClost,diff(TEC$Utopy)))  
+CBS_Tr_fun=CBSfun(TH=TEC$t,t0,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
 CBS_Tr2<-sapply(TEC$t, FUN=CBS_Tr_fun)
 
 # plot
-plot(TEC$X,CBS_Tr1,type="l",col = "green", lwd=3,
+plot(TEC$t,CBS_Tr1,type="l",col = 4, lwd=3,
      ylab=expression(paste("CBS ("," W ", ha^-1, " yr)")), 
      xlab="Time horizon (yr)")
-lines(TEC$X,CBS_Tr2,col='red',lwd=3)
+lines(TEC$t,CBS_Tr2,col=7,lwd=3)
 abline(0, 0, lty='dashed')
-legend("topleft",c("After tree harvesting", "Intact plantation"),lty=1,col=c('red','green'), lwd=3, bty="n")
+legend("bottomleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
 
 
 

@@ -22,7 +22,7 @@ forestmodel <- function(t) {
 }
 forestvalues <- forestmodel(t)
 # Plot the results
-matplot(forestvalues$t,forestvalues[,2:5], type="l", lty=1,lwd=3, col=c(2:4,1),ylim=c(0,max(TCS_values2)), 
+matplot(forestvalues$t,forestvalues[,2:5], type="l", lty=1,lwd=3, col=c(2:4,1), 
         ylab=" Eucalyptus Carbon stocks (Ton C/ha)", xlab="Time (years)")
 legend("right",c("TAGB", "TBB","TDM","TCS"),lty=1,col=c(2:4,1), lwd=3, bty="n")
 
@@ -72,5 +72,5 @@ matplot(tb,kukuivalues[[6]]$TCS, type="l", lty=1,lwd=3,
 lines(tb,kukuivalues[[6]]$AGB*0.45, type="l", lty=1, col = 2, lwd=3)
 lines(tb,kukuivalues[[6]]$BGB*0.45, type="l", lty=1, col = 3, lwd=3)    
 legend("topleft",c("Total", "Aboveground", "Belowground"),lty=1,col=c(1:3), lwd=3, bty="n")
-
+# CAN BE IMPROVED:
 # Kukui values are smaller than Eucalyptus, but generally are half their height, so it could be right.
