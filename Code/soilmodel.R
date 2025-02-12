@@ -22,8 +22,8 @@ pools=c(0.52/OC, 3.07/OC, 1.6/OC, 8.36/OC, 2.54/OC)
 # These are the stocks of SOC per pool
 ivList=pools*SOC
 # These are the C input fluxes in tons C ha-1 y-1
-# Giardina et al. 2014 proposed a flux of 23.6 Mg C ha-1 y-1 up to 91.5 cm from plants to soils
-inputs=4.4+18.8+0.4
+# Giardina et al. 2014 proposed a flux of 15.5 Mg C ha-1 y-1 up to 91.5 cm from plants to soils
+inputs=2.7+12.4+0.4
 # Multiplied by the proportion that enters each pool (from Crow et al. 2015) we get inputs per pool
 inputFluxes=c(inputs*0.9184, inputs*0.0045, inputs*0.0755, 0, 0) 
 # The model
