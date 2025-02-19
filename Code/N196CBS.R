@@ -3,13 +3,13 @@ TEC=as.data.frame(cbind(t=2025:2100,
   BAU=forestvalues$TCS[61:136]+Ct[61:136,1], 
   Utopy= c(0,na.omit(kukuivalues[[6]]$TCS))+Ctb[,1] 
   ))
-#write.csv(TEC, 'C:/Users/asarq/Documents/TEC.csv')
+#write.csv(TEC, 'C:/Users/asarq/Documents/GitHub/N196CBS/Data/TEC.csv')
 #TEC<-read.csv("~/tmp/TEC.csv")
 
 # Plot the results
-matplot(TEC$t,TEC[,c(2,3)], type="l", lty=1,lwd=3, col=c(4,7), 
+matplot(TEC$t,TEC[,c(2,3)], type="l", lty=1,lwd=3, col=c('#ff6b35','#53c98b'), ylim = c(0,2600),
         ylab="Carbon stocks (Mg C/ha)", xlab="Year")
-legend("topleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
+legend("topleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c('#ff6b35','#53c98b'), lwd=3, bty="n")
 polygon(c(TEC$t, rev(TEC$t)), c(TEC[,2], rep(0, length(TEC[,2]))),
         density = 20, angle = 45, border = NA, col = 4)
 polygon(c(TEC$t, rev(TEC$t)), c(TEC[,3], rep(0, length(TEC[,3]))),
@@ -29,9 +29,9 @@ CS=function(x,y, t){integrate(splinefun(x, y), lower=t0, upper=t)$value}
 CSt1=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$BAU)) 
 CSt2=unlist(sapply(TEC$t, FUN=CS, x=TEC$t, y=TEC$Utopy)) 
 CSdf=as.data.frame(cbind(year=TEC$t, CSt1, CSt2))
-matplot(CSdf$year,CSdf[,c(2,3)], type="l", lty=1,lwd=3, col=c(4,7), 
+matplot(CSdf$year,CSdf[,c(2,3)], type="l", lty=1,lwd=3, col=c('#ff6b35','#53c98b'), 
         ylab="Carbon Sequestration (Mg C/ha y)", xlab="Year")
-legend("topleft",c("Eucalyptus plantation", "Pakukui Agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
+legend("topleft",c("Eucalyptus plantation", "Pakukui Agroforestry"),lty=1,col=c('#ff6b35','#53c98b'), lwd=3, bty="n")
 
 # Now calculate CBS (Climate Benefit of Sequestration)
 # Radiative efficiency of one MgC in W m-2 (from Joos et al. 2013)
@@ -62,20 +62,24 @@ CBS_Tr1<-sapply(TEC$t, FUN=CBS_Tr_fun)
 # t=0 represents emissions from clearing eucalyptus and biochar production
 # this includes emissions from fuel calculated by Darshi 
 # COULD BE IMPROVED: it doesn't include CO2 equivalents
-fuelC=-0.0297 # C Mg ha-1 (one time emission)
+# COULD BE IMPROVED: I ended up using values for a density of 1598 m3 which matched AGB60 (wood density of 0.42 from Turn et al., 2014)
+fuelC=-2.5 # C Mg ha-1 (one time emission)
 # and also includes the C lost during biochar production calculated from biochar efficiency (eucClost)
-eucClost=-(1-yield)*AGC60
+eucClost=-(1-yield)*AGB60*0.482 # convert Eucalyptus biomass back to C
 smr2=splinefun(TEC$t, c(fuelC+eucClost,diff(TEC$Utopy)))  
 CBS_Tr_fun=CBSfun(TH=TEC$t,t0,kCO2 = RE1Mg, ha=IRF_PD100, smrfun = smr2)
 CBS_Tr2<-sapply(TEC$t, FUN=CBS_Tr_fun)
 
 # plot
-plot(TEC$t,CBS_Tr1,type="l",col = 4, lwd=3,
+plot(TEC$t,CBS_Tr1,type="l",col = '#ff6b35', lwd=3,
      ylab=expression(paste("CBS ("," W ", ha^-1, " yr)")), 
      xlab="Time horizon (yr)")
-lines(TEC$t,CBS_Tr2,col=7,lwd=3)
+lines(TEC$t,CBS_Tr2,col='#53c98b',lwd=3)
 abline(0, 0, lty='dashed')
-legend("bottomleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c(4,7), lwd=3, bty="n")
+legend("bottomleft",c("Eucalyptus plantation", "Pakukui agroforestry"),lty=1,col=c('#ff6b35','#53c98b'), lwd=3, bty="n")
 
-
-
+# plot absolute difference between the 2, using BaU as the baseline
+plot(TEC$t,abs(CBS_Tr1-CBS_Tr2),type="l",col = '#cb71ff', lwd=3,
+     ylab=expression(paste("|CBS| ("," W ", ha^-1, " yr)")), 
+     xlab="Time horizon (yr)")
+abline(0, 0, lty='dashed')
