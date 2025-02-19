@@ -32,9 +32,7 @@ legend("right",c("TAGB", "TBB","TDM","TCS"),lty=1,col=c(2:4,1), lwd=3, bty="n")
 
 # Imagine Eucalyptus are cleared and turned into biochar (see script soilmodel.R)
 # In that place, Kukui (Aleurites moluccanus) are planted as an agroforestry management 
-# growth model (only aboveground biomass)
 # CAN BE IMPROVED: could try different belowground models. Also, lacking dead biomass model. Also, Kukui C content
-# transform to Mg from kg dividing by 1000
 kukuimodel <- function(t, d) {
   DBH <- -9.021135 + 16.757157 * log(t) # from Lincoln 2023 (in cm)
   HEIGHT <- -3.635323 + 8.5568025 * log(t) # from Lincoln 2023 (in m)

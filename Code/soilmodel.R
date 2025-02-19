@@ -48,12 +48,15 @@ yield=mean(c(0.20, 0.065, 0.13, 0.21))
 biocharC=mean(c(0.76, 0.89, 0.58, 0.83))
 # Now imagine all trees are harvested at once and turned into biochar
 # We use Eucalyptus grandis aboveground carbon from the forest model at year 60
-AGC60=forestvalues$TAGB[60]
-biochartotal=AGC60*yield*biocharC
-# this amount of biochar is above the maximum application threshold (20 Mg ha-1, Wang et al. 2016),
-# we can then apply 20 Mg ha-1 and send the rest to OKFarms for composting (coming soon)
+# and convert to biomass using 48.2 % Eucalyptus wood C content (Ryan et al. 2004)
+AGB60=forestvalues$TAGB[60]/0.482
+biochartotal=AGB60*yield*biocharC
+# the maximum biochar application threshold in Wang et al. (2016) is 20 % of SOC (CAN BE IMPROVED: maybe more?)
+# considering soil C at year 60 in the BaU model, that value would be:
+sum(getC(soilmodel)[60,])*0.2
+# we can then apply all the biochar since it's below the threshold
 # new soil model with a new pool that represents a single application of biochar (decay rate from Wang et al. 2016)
-# this asumes that changing the vegetation and applying biochar does not change the behavior of the soil. 
+# this assumes that changing the vegetation and applying biochar does not change the behavior of the soil. 
 # CAN BE IMPROVED!
 Ab=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0, 0,
            0, -0.0033, 0, 0, 0.0033*0.8433, 0,
@@ -62,7 +65,7 @@ Ab=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0, 0,
            0, 0, 0, 0, -0.001, 0,
            0, 0, 0, 0, 0, -0.004), nrow=6)
 # since this simulation starts 60 years after the previous one, we use those stocks at year 60 as initial conditions for this, plus biochar
-ivListb=c(getC(soilmodel)[60,],20)
+ivListb=c(getC(soilmodel)[60,],biochartotal)
 # FOR NOW KUKUI INPUTS ARE EQUAL TO EUCALYPTUS', BUT CAN BE IMPROVED
 inputFluxesb=c(inputFluxes,0)
 
