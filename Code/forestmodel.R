@@ -2,6 +2,8 @@
 # The simulated forest is 60 years old, so we run the simulation starting 60 years from 2025, until 2100
 t=seq(1965:2100)
 # We use data from Eucalyptus plantations in Hawai'i
+# CAN BE IMPROVED: instead of starting with this amount of C, how about constraining the model
+# to reach this amount whenever the data were taken
 AGB=337.6 # aboveground biomass carbon (tons ha-1) lidar data obtained by Hayley
 BGB=mean(c(22.4, 66)) # belowground biomass carbon (tons ha-1) averaged from Reeves 2012 thesis and Selments et al. 2017
 DM=12 # litter carbon (tons ha-1) from Selments et al. 2017

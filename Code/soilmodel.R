@@ -14,6 +14,8 @@ A=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0,
            0, 0, 0, -0.0032, 0,
            0, 0, 0, 0, -0.001), nrow=5)
 # This is the SOC stock in Eucalyptus plantations in tons ha-1 up to 1 m (from Reeves 2012 thesis)
+# CAN BE IMPROVED: instead of starting with this amount of SOC, how about constraining the model
+# to reach this amount in 2012 (or whenever the data were taken)
 SOC=593 
 # This is the total SOC % up to 15 cm (Crow et al. 2015)
 OC=sum(0.52, 3.07, 1.6, 8.36, 2.54) 
