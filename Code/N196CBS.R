@@ -41,6 +41,8 @@ IRF_func=function(t, a0, as, tau){
   a0+sum(as*exp(-t/tau))
 }
 # Impulse response function modified after Millar et al. 2017
+# parameters in as and tau correspond to: geological re-absorption, deep ocean invasion/equilibration, biosphere uptake/ocean thermocline invasion, and rapid biospheric putake/ocean mixe-layer invasion
+# tau (years, decay time constant) and as (fraction of C emissions entering each reservoir)
 IRF_PD100=Vectorize(function(x){IRF_func(x, a0=0, as=c(0.2173,0.2240, 0.2824, 0.2763), tau=c(1000000,394.4, 36.54, 4.304))})
 # convolution between the impulse response function of atmospheric CO2 and the carbon returning from ecosystems to the atmosphere
 convolutionfun=function(t, t0=0, f, g){
