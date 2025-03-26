@@ -1,5 +1,5 @@
 library(ggplot2)
-library(plyr)
+library(dplyr)
 # BUSINESS AS USUAL SCENARIO
 # The simulated forest is 60 years old, so we run the simulation starting 60 years from 2025, until 2100
 t=seq(1965:2100)
@@ -55,23 +55,20 @@ biomass= function(DBH) {
 # eucbiomass=biomass(data$'DBH..cm.') # kg
 # data=cbind(data, eucbiomass)
 # write.csv(data, 'C:/Users/asarq/Documents/GitHub/N196CBS/Data/DOFAWfiltered.csv')
-byplot = ddply(DOFAWfiltered, .(Plot, age),reframe, 
-               woodarea = sum(wood)/area,
-               crownarea = sum(crown)/area,
-               rootarea = sum(root)/area, 
-               totalarea=sum(total)/area
+byplot = ddply(DOFAWfiltered, .(Plot, age),summarise, 
+               woodarea = sum(wood)/0.04,
+               crownarea = sum(crown)/0.04,
+               rootarea = sum(root)/0.04, 
+               totalarea=sum(total)/0.04
                ) 
 ggplot(data=byplot, aes(age, totalarea/1000,color=as.factor(Plot))) +
   geom_point(size=5) +
   ylab('Total biomass (Mg/ha)') +
   theme_bw()
 ggplot(data=byplot, aes(age, (woodarea+crownarea)/1000,color=as.factor(Plot))) +
-  geom_point() +
-  ylab('AGB (Mg/ha)') 
-# these values are super high compared to the LIDAR data. 
-# converting 337.5 C Mg/ha to biomass assuming 45% C content is around 751 Mg/ha
-# this value could be from 22 to 34 years of stand age
-
+  geom_point(size=5) +
+  ylab('AGB (Mg/ha)')  +
+  theme_bw()
 # try with Chave et al. 2014 equation instead of Kaye's
 biomass2= function(DBH, Height) {
   AGB <- 0.0673 * (d*DBH^2*Height)^0.976
@@ -85,14 +82,43 @@ biomass2= function(DBH, Height) {
 }
 d=mean(0.803, 0.679, 0.87) #specific gravity (g/cm3) from moisturemeters.com.au/pages/australian-species-spacific-gravity-table
 eucbiomass2=biomass2(DOFAWfiltered$DBH, DOFAWfiltered$Height)
-
 #compare predictions
 plot(eucbiomass$total, eucbiomass2$total)
 cor(eucbiomass$total, eucbiomass2$total) # r2: 0.968
-# both methods work similarly
+# both methods work similarly, so I'm sticking with the Hawaiian equations in Kaye et al. 2000
+# Fitting a Gompertz logistic model to total biomass data.
+time=c(0, byplot$age)
+biomass=c(0,byplot$totalarea/1000) # transform to Mg
+gompertz <- nls(biomass ~ A * exp(-B * exp(-k * time)),
+                      start = list(A = 2084, B = 3, k = 0.022), # initial values for iterative optimization
+                      data = data.frame(time, biomass))
+summary(gompertz)
+# residual analysis
+plot(time, residuals(gompertz), main="Residuals vs Time", ylab="Residuals")
+hist(residuals(gompertz), main="Histogram of Residuals", xlab="Residuals")
+# pseudo R2
+rss <- sum(residuals(gompertz)^2)
+tss <- sum((biomass - mean(biomass))^2)
+pseudo_R2 <- 1 - (rss/tss)
+# fitted curve vs data
+plot(time, biomass, main="Gompertz Model Fit", xlab="Time", ylab="Biomass")
+lines(time, predict(gompertz), col="red", lwd=2)
+# final equation
+forestmodel2=function(t) {
+  biomass=2223 * exp(-2.946 * exp(-0.04306 * t)) # parameters from previous optimization
+  return(data.frame(
+    time=t,
+    biomass=biomass
+  ))
+}
+# apparently the forest was planted in 1994
+t=seq(1994:2100)
+forestvalues2=forestmodel2(t)
+years=seq(from=1994, to=2100, by=1)
+matplot(t,forestvalues2$biomass, type="l", lty=1,lwd=3, col=c(2), 
+        ylab=" Eucalyptus biomass (Mg C/ha)", xlab="Years")
+points(time, biomass)
 
-
-# eucmodel= consider adding annual litterfal of 4.1 Mg C ha-1 from Giardina et al. 2004
 
 
 
