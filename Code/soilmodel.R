@@ -3,8 +3,6 @@ library(SoilR)
 # BUSINESS AS USUAL SCENARIO
 
 # This is a simulation of soil organic C dynamics in a Eucalyptus plantation from the model proposed in Crow et al. 2015.
-# The simulated forest is 60 years old, so we run the simulation starting 60 years from 2025, until 2100
-t=seq(1965:2100)
 # We define the matrix of parameters where the diagonal parameters are the decomposition constants for each pool,
 # and the rest are coefficients of transference from one pool to another.
 # This model has 5 pools defined from fractionation techniques in the publication.
@@ -13,10 +11,13 @@ A=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0,
            0, 0, -0.008, 0, 0.008*0.0277,
            0, 0, 0, -0.0032, 0,
            0, 0, 0, 0, -0.001), nrow=5)
-# This is the SOC stock in Eucalyptus plantations in tons ha-1 up to 1 m (from Reeves 2012 thesis)
-# CAN BE IMPROVED: instead of starting with this amount of SOC, how about constraining the model
-# to reach this amount in 2012 (or whenever the data were taken)
-SOC=593 
+# This is the SOC stock in Eucalyptus plantations in tons ha-1 up to 1 m (from Crow et al. 2016)
+SOC=543.4 
+# FOR LATER CONSIDERATION: this amount of SOC was measured in 2011, when the plantation was between
+# 7-10 years old (say 8.5 years on average). When accounting for time in the BaU scenario, 
+# deduct this amount of time. That is, if HuiMAU's plantations are 31 years old, start the BaU simulation
+# at 23 years prior to account for the first 8 years of SOC accrual.
+t=seq(2002:2100)
 # This is the total SOC % up to 15 cm (Crow et al. 2015)
 OC=sum(0.52, 3.07, 1.6, 8.36, 2.54) 
 # This is the proportion of organic C per pool
@@ -24,17 +25,19 @@ pools=c(0.52/OC, 3.07/OC, 1.6/OC, 8.36/OC, 2.54/OC)
 # These are the stocks of SOC per pool
 ivList=pools*SOC
 # These are the C input fluxes in tons C ha-1 y-1
-# Giardina et al. 2014 proposed a flux of 15.5 Mg C ha-1 y-1 up to 91.5 cm from plants to soils
-inputs=2.7+12.4+0.4
+# Giardina et al. 2014 proposed a flux of 0.4 Mg C ha-1 y-1 up to 91.5 cm from roots to soils
+inputs=0.4
 # Multiplied by the proportion that enters each pool (from Crow et al. 2015) we get inputs per pool
 inputFluxes=c(inputs*0.9184, inputs*0.0045, inputs*0.0755, 0, 0) 
 # The model
 soilmodel=Model(t, A, ivList, inputFluxes)
 # Get stocks dynamics
 Ct=cbind(rowSums(getC(soilmodel)),getC(soilmodel))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6,ylim=c(0,max(Ct)), 
-        ylab="Carbon stocks (Ton C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n")
+years=seq(from=2002, to=2100)
+matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6,ylim=c(0,700), 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topright",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
+abline(v = 2025, col = "black", lty = 2)
 
 #############################################################################################
 
