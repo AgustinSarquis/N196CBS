@@ -1,4 +1,5 @@
 library(ggplot2)
+library(plyr)
 library(dplyr)
 # BUSINESS AS USUAL SCENARIO
 # The simulated forest is 60 years old, so we run the simulation starting 60 years from 2025, until 2100
@@ -118,7 +119,37 @@ years=seq(from=1994, to=2100, by=1)
 matplot(t,forestvalues2$biomass, type="l", lty=1,lwd=3, col=c(2), 
         ylab=" Eucalyptus biomass (Mg C/ha)", xlab="Years")
 points(time, biomass)
-
+# fit a model for BGB
+BGB=c(0,byplot$rootarea/1000) # transform to Mg
+BGBgompertz <- nls(BGB ~ A * exp(-B * exp(-k * time)),
+                start = list(A = 222, B = 3, k = 0.022), # initial values for iterative optimization
+                data = data.frame(time, BGB))
+summary(BGBgompertz)
+# residual analysis
+plot(time, residuals(BGBgompertz), main="Residuals vs Time", ylab="Residuals")
+hist(residuals(BGBgompertz), main="Histogram of Residuals", xlab="Residuals")
+# pseudo R2
+rss <- sum(residuals(BGBgompertz)^2)
+tss <- sum((BGB - mean(BGB))^2)
+pseudo_R2 <- 1 - (rss/tss)
+# fitted curve vs data
+plot(time, BGB, main="Gompertz Model Fit", xlab="Time", ylab="BGB")
+lines(time, predict(BGBgompertz), col="red", lwd=2)
+# final equation
+BGBmodel2=function(t) {
+  BGB=198.9191 * exp(-2.76846 * exp(-0.06354 * t)) # parameters from previous optimization
+  return(data.frame(
+    time=t,
+    BGB=BGB
+  ))
+}
+# apparently the forest was planted in 1994
+t=seq(1994:2100)
+BGBvalues2=BGBmodel2(t)
+years=seq(from=1994, to=2100, by=1)
+matplot(t,BGBvalues2$BGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(BGB)),
+        ylab=" Eucalyptus root biomass (Mg C/ha)", xlab="Years")
+points(time, BGB)
 
 
 

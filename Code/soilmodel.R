@@ -25,19 +25,28 @@ pools=c(0.52/OC, 3.07/OC, 1.6/OC, 8.36/OC, 2.54/OC)
 # These are the stocks of SOC per pool
 ivList=pools*SOC
 # These are the C input fluxes in tons C ha-1 y-1
-# Giardina et al. 2014 proposed a flux of 0.4 Mg C ha-1 y-1 up to 91.5 cm from roots to soils
-inputs=0.4
+# Giardina et al. 2014 proposed a flux of 0.4 Mg C ha-1 y-1 up to 91.5 cm from roots to soils at steady state
+# This represents 2% of total below-ground carbon flux 
+# We define inputs using 2% of the BGB model
+inputs=function (t) {0.02*BGBmodel2(t)[,2]}
 # Multiplied by the proportion that enters each pool (from Crow et al. 2015) we get inputs per pool
-inputFluxes=c(inputs*0.9184, inputs*0.0045, inputs*0.0755, 0, 0) 
+inputFluxes=as.data.frame(cbind(t, 0.9184*inputs(t), 0.0045*inputs(t), 0.0755*inputs(t), 0*inputs(t), 0*inputs(t)))
 # The model
-soilmodel=Model(t, A, ivList, inputFluxes)
+soilmodel=Model(t, A, ivList, inputFluxes )
 # Get stocks dynamics
 Ct=cbind(rowSums(getC(soilmodel)),getC(soilmodel))
 years=seq(from=2002, to=2100)
-matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6,ylim=c(0,700), 
+matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6, 
         ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
 legend("topright",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
 abline(v = 2025, col = "black", lty = 2)
+
+inputFluxes2=c(0.9184*4, 0.0045*4, 0.0755*4, 0, 0)
+soilmodel=Model(t, A, ivList, inputFluxes2)
+
+
+
+
 
 #############################################################################################
 
