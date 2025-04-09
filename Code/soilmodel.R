@@ -38,7 +38,7 @@ Ct=cbind(rowSums(getC(soilmodel)),getC(soilmodel))
 years=seq(from=2002, to=2100)
 matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6, 
         ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topright",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
+legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
 abline(v = 2025, col = "black", lty = 2)
 
 inputFluxes2=c(0.9184*4, 0.0045*4, 0.0755*4, 0, 0)
