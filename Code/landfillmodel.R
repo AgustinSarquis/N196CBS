@@ -75,3 +75,12 @@ C90=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, getC(m90))
 all=rowSums(cbind(C100, C99, C98, C97, C96, C95, C94, C93, C92, C91, C90))
 head(all)
 head(getC(KonaBaU))
+
+# ANOTHER OPTION
+# BaU
+# I used the WARM model from EPA
+# For 9 tons of meat waste per week, with a transportation distance of 308 miles and MAP of 508 mm
+# emissions are 4.99 Mg eCO2/week or 259.48 Mg eCO2/year
+# Utopia
+# Choosing to compost produces a negative emission (sequestration) of 
+# -1.4 Mg eCO2/week or -72.8 Mg eCO2/year

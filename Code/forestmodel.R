@@ -39,6 +39,20 @@ legend("right",c("TAGB", "TBB","TDM","TCS"),lty=1,col=c(2:4,1), lwd=3, bty="n")
 # EM: Eucalyptus microcorys
 # ER: Eucalyptus robusta
 # EF: Eucalyptus resinifera
+# Compare data from DOFAW with measuremnts made at huiMAU on 04/08/2025
+matplot(DOFAWfiltered$age,DOFAWfiltered$DBH, pch=16, col=2, 
+        ylab="Eucalyptus DBH (cm)", xlab="Years")
+eucs=huiMAU04082025[1:10,]
+points(eucs$age, eucs$DBHcm, pch=16, col=3)
+legend("bottomright",c("DOFAW", "huiMAU"),pch=16,col=2:3, cex = 0.9)
+
+
+
+
+
+
+
+
 # Use allometric equations in Kaye et al. 2000 developed for Eucalyptus in Hawai'i
 biomass= function(DBH) {
   wood=0.0062*DBH^3.3178
@@ -69,7 +83,11 @@ ggplot(data=byplot, aes(age, totalarea/1000,color=as.factor(Plot))) +
 ggplot(data=byplot, aes(age, (woodarea+crownarea)/1000,color=as.factor(Plot))) +
   geom_point(size=5) +
   ylab('AGB (Mg/ha)')  +
-  theme_bw()
+  theme_bw()+ 
+  geom_point(data = data.frame(age = 31, agb = 689.1), # add data point of lidar measured by HPC
+                         aes(x = age, y = agb), 
+                         color = "black", 
+                         size = 5)
 # try with Chave et al. 2014 equation instead of Kaye's
 biomass2= function(DBH, Height) {
   AGB <- 0.0673 * (d*DBH^2*Height)^0.976
