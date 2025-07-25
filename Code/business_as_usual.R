@@ -12,7 +12,7 @@ library(plyr)
 
 # Using repeated growth plot data from the Division of Forestry and Wildlife (DOFAW)
 # Use aboveground biomass allometric equations in Kaye et al. 2000 developed for Eucalyptus in Hawai'i and
-# root allometric equation in Waring and Powers 2017 for Eucalyptus in Kenya
+# root allometric equation in Kuyah et al. 2013 for Eucalyptus in Kenya
 euc_allometry= function(DBH) {
   wood=0.0062*DBH^3.3178
   crown=0.0082*DBH^2.2095
@@ -135,7 +135,25 @@ matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6,
 legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
 abline(v = 2025, col = "black", lty = 2)
 
-inputFluxes2=c(0.9184*4, 0.0045*4, 0.0755*4, 0, 0)
-soilmodel=Model(t, A, ivList, inputFluxes2)
-
-# whyyyyyy still getting crazy SOC values
+# alternative. the previous model overestimates final C
+# the next model was fit with SIDb data for non native forests in Andisols in the Crow2019a entry.
+# sites 46, 47, 48, 70, 71 and 72
+# parameters for a two pool series model
+k1=c(0.03907, 0.02842, 0.02411, 0.01062, 0.00331, 0.0068647)
+k2=c(0.00102, 0.00125, 0.00108, 0.00162, 0.000965, 0.0020263)
+gamma=c(0.141, 0.093, 0.058, 0.117, 0.987, 0.1807374)
+a21=c(0.688883772, 0.424837969, 0.205219313, 0.170861778, 0.0000944,0.1129021)
+# inputs from roots
+In=as.data.frame(cbind(t, inputs(t), 0*inputs(t)))
+# Start simulation
+soilmodel46=TwopSeriesModel(t, ks=c(k1[1], k2[1]), a21[1], In, C0=c(SOC*gamma[1], SOC*(1-gamma[1])))
+soilmodel47=TwopSeriesModel(t, ks=c(k1[2], k2[2]), a21[2], In, C0=c(SOC*gamma[2], SOC*(1-gamma[2])))
+soilmodel48=TwopSeriesModel(t, ks=c(k1[3], k2[3]), a21[3], In, C0=c(SOC*gamma[3], SOC*(1-gamma[3])))
+soilmodel70=TwopSeriesModel(t, ks=c(k1[4], k2[4]), a21[4], In, C0=c(SOC*gamma[4], SOC*(1-gamma[4])))
+soilmodel71=TwopSeriesModel(t, ks=c(k1[5], k2[5]), a21[5], In, C0=c(SOC*gamma[5], SOC*(1-gamma[5])))
+soilmodel72=TwopSeriesModel(t, ks=c(k1[6], k2[6]), a21[6], In, C0=c(SOC*gamma[6], SOC*(1-gamma[6])))
+# Get stocks dynamics
+Ct=cbind(rowSums(getC(soilmodel71)),getC(soilmodel71))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)

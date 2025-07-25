@@ -44,10 +44,6 @@ abline(v = 2025, col = "black", lty = 2)
 inputFluxes2=c(0.9184*4, 0.0045*4, 0.0755*4, 0, 0)
 soilmodel=Model(t, A, ivList, inputFluxes2)
 
-
-
-
-
 #############################################################################################
 
 # UTOPIAN SCENARIO
