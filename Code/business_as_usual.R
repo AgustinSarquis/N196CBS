@@ -145,15 +145,53 @@ gamma=c(0.141, 0.093, 0.058, 0.117, 0.987, 0.1807374)
 a21=c(0.688883772, 0.424837969, 0.205219313, 0.170861778, 0.0000944,0.1129021)
 # inputs from roots
 In=as.data.frame(cbind(t, inputs(t), 0*inputs(t)))
-# Start simulation
-soilmodel46=TwopSeriesModel(t, ks=c(k1[1], k2[1]), a21[1], In, C0=c(SOC*gamma[1], SOC*(1-gamma[1])))
-soilmodel47=TwopSeriesModel(t, ks=c(k1[2], k2[2]), a21[2], In, C0=c(SOC*gamma[2], SOC*(1-gamma[2])))
-soilmodel48=TwopSeriesModel(t, ks=c(k1[3], k2[3]), a21[3], In, C0=c(SOC*gamma[3], SOC*(1-gamma[3])))
-soilmodel70=TwopSeriesModel(t, ks=c(k1[4], k2[4]), a21[4], In, C0=c(SOC*gamma[4], SOC*(1-gamma[4])))
-soilmodel71=TwopSeriesModel(t, ks=c(k1[5], k2[5]), a21[5], In, C0=c(SOC*gamma[5], SOC*(1-gamma[5])))
-soilmodel72=TwopSeriesModel(t, ks=c(k1[6], k2[6]), a21[6], In, C0=c(SOC*gamma[6], SOC*(1-gamma[6])))
-# Get stocks dynamics
+# Start simulations
+# Site 46
+soilmodel46=TwopSeriesModel(t, ks=c(k1[1], k2[1]), a21[1]*k1[1], In, C0=c(SOC*gamma[1], SOC*(1-gamma[1])))
+Ct=cbind(rowSums(getC(soilmodel46)),getC(soilmodel46))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+# Site 47
+soilmodel47=TwopSeriesModel(t, ks=c(k1[2], k2[2]), a21[2]*k1[2], In, C0=c(SOC*gamma[2], SOC*(1-gamma[2])))
+Ct=cbind(rowSums(getC(soilmodel47)),getC(soilmodel47))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+# Site 48
+soilmodel48=TwopSeriesModel(t, ks=c(k1[3], k2[3]), a21[3]*k1[3], In, C0=c(SOC*gamma[3], SOC*(1-gamma[3])))
+Ct=cbind(rowSums(getC(soilmodel48)),getC(soilmodel48))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+# Site 70
+soilmodel70=TwopSeriesModel(t, ks=c(k1[4], k2[4]), a21[4]*k1[4], In, C0=c(SOC*gamma[4], SOC*(1-gamma[4])))
+Ct=cbind(rowSums(getC(soilmodel70)),getC(soilmodel70))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+# Site 71
+soilmodel71=TwopSeriesModel(t, ks=c(k1[5], k2[5]), a21[5]*k1[5], In, C0=c(SOC*gamma[5], SOC*(1-gamma[5])))
 Ct=cbind(rowSums(getC(soilmodel71)),getC(soilmodel71))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+#Site 72
+soilmodel72=TwopSeriesModel(t, ks=c(k1[6], k2[6]), a21[6]*k1[6], In, C0=c(SOC*gamma[6], SOC*(1-gamma[6])))
+Ct=cbind(rowSums(getC(soilmodel72)),getC(soilmodel72))
+matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
+        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
+legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+# not convinced by model in site 71, pool 2 is practically non-existent. 
+# will do an average model using the other 5 sites.
+# parameters for a two pool series model
+meank1=mean(c(0.03907, 0.02842, 0.02411, 0.01062, 0.0068647))
+meank2=mean(c(0.00102, 0.00125, 0.00108, 0.00162, 0.0020263))
+meangamma=mean(c(0.141, 0.093, 0.058, 0.117, 0.1807374))
+meana21=mean(c(0.688883772, 0.424837969, 0.205219313, 0.170861778, 0.1129021))
+#Site 72
+avg_soilmodel=TwopSeriesModel(t, ks=c(meank1, meank2), meana21*meank1, In, C0=c(SOC*meangamma, SOC*(1-meangamma)))
+Ct=cbind(rowSums(getC(avg_soilmodel)),getC(avg_soilmodel))
 matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
         ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
 legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
