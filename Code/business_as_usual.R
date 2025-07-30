@@ -66,11 +66,38 @@ euc_model=function(t) {
 
 # Start simulation from 1994 until 2100
 t=seq(1994:2100)
-euc_values=euc_model(t)
+euc_values=euc_model(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
 years=seq(from=1994, to=2100, by=1)
 matplot(t,euc_values$biomass, type="l", lty=1,lwd=3, col=c(2), 
-        ylab=" Eucalyptus biomass (Mg C/ha)", xlab="Years")
+        ylab=" Eucalyptus biomass (Mg/ha)", xlab="Years")
 points(time, biomass) # add DOFAW plot points for reference
+
+# Now fit a similar model only for aboveground biomass
+AGB=c(0,(byplot$crownarea+byplot$woodarea)/1000) # transform to Mg
+AGBgompertz <- nls(AGB ~ A * exp(-B * exp(-k * time)),
+                   start = list(A = 1862, B = 3, k = 0.022), # initial values for iterative optimization
+                   data = data.frame(time, AGB))
+summary(AGBgompertz)
+# residual analysis
+plot(time, residuals(AGBgompertz), main="Residuals vs Time", ylab="Residuals")
+hist(residuals(AGBgompertz), main="Histogram of Residuals", xlab="Residuals")
+# pseudo R2
+rss <- sum(residuals(AGBgompertz)^2)
+tss <- sum((AGB - mean(AGB))^2)
+pseudo_R2 <- 1 - (rss/tss)
+# final equation
+euc_AGBmodel=function(t) {
+  AGB=2043 * exp(-3.01 * exp(-0.0415 * t)) # parameters from previous optimization
+  return(data.frame(
+    time=t,
+    AGB=AGB
+  ))
+}
+# Start simulation
+euc_AGBvalues=euc_AGBmodel(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
+matplot(t,euc_AGBvalues$AGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(AGB)),
+        ylab=" Eucalyptus aboveground biomass (Mg/ha)", xlab="Years")
+points(time, AGB)
 
 # Now fit a similar model only for roots to compute C inputs in the soil model
 BGB=c(0,byplot$rootarea/1000) # transform to Mg
@@ -94,9 +121,9 @@ euc_BGBmodel=function(t) {
   ))
 }
 # Start simulation
-euc_BGBvalues=euc_BGBmodel(t)
+euc_BGBvalues=euc_BGBmodel(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
 matplot(t,euc_BGBvalues$BGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(BGB)),
-        ylab=" Eucalyptus root biomass (Mg C/ha)", xlab="Years")
+        ylab=" Eucalyptus root biomass (Mg/ha)", xlab="Years")
 points(time, BGB)
 
 # Soil 
