@@ -1,6 +1,6 @@
-#####################
-# BUSINESS AS USUAL #
-#####################
+#################################
+# SCENARIO 1: BUSINESS AS USUAL #
+#################################
 
 # load libraries
 library(SoilR)
@@ -128,97 +128,22 @@ points(time, BGB)
 
 # Soil 
 
-# Using the model proposed in Crow et al. 2015 for a native forest near the area of our study site
-# We define the matrix of parameters where the diagonal parameters are the decomposition constants for each pool,
-# and the rest are coefficients of transference from one pool to another.
-# This model has 5 pools defined from fractionation at a depth of 0-15 cm.
-A=matrix(c(-0.135, 0, 0, 0.135*0.9958, 0,
-           0, -0.0033, 0, 0, 0.0033*0.8433,
-           0, 0, -0.008, 0, 0.008*0.0277,
-           0, 0, 0, -0.0032, 0,
-           0, 0, 0, 0, -0.001), nrow=5)
-# This is the SOC stock in Eucalyptus plantations in Mg ha-1 up to 15 cm (from CIG project on site)
-SOC=72.38
-# This is the total SOC % in each fraction (Crow et al. 2015)
-OC=sum(0.52, 3.07, 1.6, 8.36, 2.54) 
-# This is the proportion of organic C per pool
-pools=c(0.52/OC, 3.07/OC, 1.6/OC, 8.36/OC, 2.54/OC) 
-# These are the stocks of SOC per pool
-ivList=pools*SOC
-# These are the C input fluxes in Mg C ha-1 y-1
-# Giardina et al. 2014 proposed a flux of 0.4 Mg C ha-1 y-1 up to 91.5 cm from roots to soils at steady state
-# This represents 2% of total below-ground carbon flux 
-# We define inputs using 2% of the euc_BGBmodel
-inputs=function (t) {0.02*euc_BGBmodel(t)[,2]}
-# Multiplied by the proportion that enters each pool (from Crow et al. 2015) we get inputs per pool
-inputFluxes=as.data.frame(cbind(t, 0.9184*inputs(t), 0.0045*inputs(t), 0.0755*inputs(t), 0*inputs(t), 0*inputs(t)))
-
-# Start simulation
-soilmodel=Model(t, A, ivList, inputFluxes )
-# Get stocks dynamics
-Ct=cbind(rowSums(getC(soilmodel)),getC(soilmodel))
-matplot(years,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2","Pool 3", "Pool 4", "Pool 5"),lty=1,col=1:6, lwd=3, bty="n", cex = 0.7)
-abline(v = 2025, col = "black", lty = 2)
-
-# alternative. the previous model overestimates final C
 # the next model was fit with SIDb data for non native forests in Andisols in the Crow2019a entry.
 # sites 46, 47, 48, 70, 71 and 72
-# parameters for a two pool series model
-k1=c(0.03907, 0.02842, 0.02411, 0.01062, 0.00331, 0.0068647)
-k2=c(0.00102, 0.00125, 0.00108, 0.00162, 0.000965, 0.0020263)
-gamma=c(0.141, 0.093, 0.058, 0.117, 0.987, 0.1807374)
-a21=c(0.688883772, 0.424837969, 0.205219313, 0.170861778, 0.0000944,0.1129021)
-# inputs from roots
-In=as.data.frame(cbind(t, inputs(t), 0*inputs(t)))
+# parameters for a one pool model (in Azizi-Rad et al. this is the best model)
+ks=c(0.00138, 0.00169, 0.00142, 0.00214, 0.00327, 0.0026023)
+# inputs from roots (C Mg / ha)
+# Giardina et al. 2014 proposed a flux of 0.4 Mg C ha-1 y-1 up to 91.5 cm from roots to soils at steady state
+# This represents 2% of total below-ground carbon flux 
+# We define inputs using 2% of the BGB model
+inputs=function (t) {0.02*euc_BGBmodel(t)[,2]}
+In=as.data.frame(cbind(t, inputs(t)))
+# This is the SOC stock in Eucalyptus plantations in Mg ha-1 up to 15 cm (from CIG project on site)
+SOC=72.38
 # Start simulations
-# Site 46
-soilmodel46=TwopSeriesModel(t, ks=c(k1[1], k2[1]), a21[1]*k1[1], In, C0=c(SOC*gamma[1], SOC*(1-gamma[1])))
-Ct=cbind(rowSums(getC(soilmodel46)),getC(soilmodel46))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-# Site 47
-soilmodel47=TwopSeriesModel(t, ks=c(k1[2], k2[2]), a21[2]*k1[2], In, C0=c(SOC*gamma[2], SOC*(1-gamma[2])))
-Ct=cbind(rowSums(getC(soilmodel47)),getC(soilmodel47))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-# Site 48
-soilmodel48=TwopSeriesModel(t, ks=c(k1[3], k2[3]), a21[3]*k1[3], In, C0=c(SOC*gamma[3], SOC*(1-gamma[3])))
-Ct=cbind(rowSums(getC(soilmodel48)),getC(soilmodel48))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-# Site 70
-soilmodel70=TwopSeriesModel(t, ks=c(k1[4], k2[4]), a21[4]*k1[4], In, C0=c(SOC*gamma[4], SOC*(1-gamma[4])))
-Ct=cbind(rowSums(getC(soilmodel70)),getC(soilmodel70))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-# Site 71
-soilmodel71=TwopSeriesModel(t, ks=c(k1[5], k2[5]), a21[5]*k1[5], In, C0=c(SOC*gamma[5], SOC*(1-gamma[5])))
-Ct=cbind(rowSums(getC(soilmodel71)),getC(soilmodel71))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-#Site 72
-soilmodel72=TwopSeriesModel(t, ks=c(k1[6], k2[6]), a21[6]*k1[6], In, C0=c(SOC*gamma[6], SOC*(1-gamma[6])))
-Ct=cbind(rowSums(getC(soilmodel72)),getC(soilmodel72))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
-# not convinced by model in site 71, pool 2 is practically non-existent. 
-# will do an average model using the other 5 sites.
-# parameters for a two pool series model
-meank1=mean(c(0.03907, 0.02842, 0.02411, 0.01062, 0.0068647))
-meank2=mean(c(0.00102, 0.00125, 0.00108, 0.00162, 0.0020263))
-meangamma=mean(c(0.141, 0.093, 0.058, 0.117, 0.1807374))
-meana21=mean(c(0.688883772, 0.424837969, 0.205219313, 0.170861778, 0.1129021))
-#Site 72
-avg_soilmodel=TwopSeriesModel(t, ks=c(meank1, meank2), meana21*meank1, In, C0=c(SOC*meangamma, SOC*(1-meangamma)))
-Ct=cbind(rowSums(getC(avg_soilmodel)),getC(avg_soilmodel))
-matplot(t,Ct, type="l", lty=1,lwd=3, col=1:6, 
-        ylab="Carbon stocks (Mg C/ha)", xlab="Time (years)")
-legend("topleft",c("Total SOC", "Pool 1","Pool 2"),lty=1,col=1:3, lwd=3, bty="n", cex = 0.7)
+soilmodel=OnepModel(t, mean(ks), In, C0=SOC)
+Ct=getC(soilmodel)
+matplot(t,Ct, type="l", lty=1,lwd=3, col=4, 
+        ylab="Soil C stocks (Mg C/ha)", xlab="Time (years)")
+
+# finally add emissions from the WARM model
