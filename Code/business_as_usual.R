@@ -65,8 +65,8 @@ euc_model=function(t) {
 }
 
 # Start simulation from 1994 until 2100
-t=seq(1994:2100)
-euc_values=euc_model(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
+t0=seq(1994:2100)
+euc_values=euc_model(t0) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
 years=seq(from=1994, to=2100, by=1)
 matplot(t,euc_values$biomass, type="l", lty=1,lwd=3, col=c(2), 
         ylab=" Eucalyptus biomass (Mg/ha)", xlab="Years")
@@ -94,8 +94,8 @@ euc_AGBmodel=function(t) {
   ))
 }
 # Start simulation
-euc_AGBvalues=euc_AGBmodel(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
-matplot(t,euc_AGBvalues$AGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(AGB)),
+euc_AGBvalues=euc_AGBmodel(t0) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
+matplot(t0,euc_AGBvalues$AGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(AGB)),
         ylab=" Eucalyptus aboveground biomass (Mg/ha)", xlab="Years")
 points(time, AGB)
 
@@ -121,8 +121,8 @@ euc_BGBmodel=function(t) {
   ))
 }
 # Start simulation
-euc_BGBvalues=euc_BGBmodel(t) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
-matplot(t,euc_BGBvalues$BGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(BGB)),
+euc_BGBvalues=euc_BGBmodel(t0) # in Mg/ha, multiply by 0.482 to convert to C (Kaye et al. 2000)
+matplot(t0,euc_BGBvalues$BGB, type="l", lty=1,lwd=3, col=2, ylim=c(0, max(BGB)),
         ylab=" Eucalyptus root biomass (Mg/ha)", xlab="Years")
 points(time, BGB)
 
@@ -137,13 +137,15 @@ ks=c(0.00138, 0.00169, 0.00142, 0.00214, 0.00327, 0.0026023)
 # This represents 2% of total below-ground carbon flux 
 # We define inputs using 2% of the BGB model
 inputs=function (t) {0.02*euc_BGBmodel(t)[,2]}
-In=as.data.frame(cbind(t, inputs(t)))
+In=as.data.frame(cbind(t0, inputs(t0)))
 # This is the SOC stock in Eucalyptus plantations in Mg ha-1 up to 15 cm (from CIG project on site)
 SOC=72.38
 # Start simulations
-soilmodel=OnepModel(t, mean(ks), In, C0=SOC)
+soilmodel=OnepModel(t0, mean(ks), In, C0=SOC)
 Ct=getC(soilmodel)
-matplot(t,Ct, type="l", lty=1,lwd=3, col=4, 
+matplot(t0,Ct, type="l", lty=1,lwd=3, col=4, 
         ylab="Soil C stocks (Mg C/ha)", xlab="Time (years)")
 
+# total ecosystem C in this scenario
+Ct1 = cbind(euc_values$biomass*0.482, Ct, Ct + euc_values$biomass*0.482)
 # finally add emissions from the WARM model
